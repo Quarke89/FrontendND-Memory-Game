@@ -37,32 +37,145 @@ header h1 {
     grid-template-columns: repeat(4, 1fr);
     grid-auto-rows: 125px;
     grid-gap: 30px;
+    padding: 40px 30px 40px 30px;
+
     background: rgb(34, 213, 196);
     background: linear-gradient(164deg, rgba(34, 213, 196, 1) 0%, rgba(105, 105, 217, 1) 79%, rgba(158, 130, 218, 1) 100%);
-    border-radius: 15px;
+    
     -webkit-box-shadow: 10px 10px 46px -2px rgba(0, 0, 0, 0.75);
     -moz-box-shadow: 10px 10px 46px -2px rgba(0, 0, 0, 0.75);
     box-shadow: 10px 10px 46px -2px rgba(0, 0, 0, 0.75);
-    padding: 40px 30px 40px 30px;
+
+    border-radius: 15px;
+}
+
+.card-container {
+    height: 125px;
+    width: 125px;
+
+    perspective: 600px;
+    transform-style: preserve-3d;
+    transition: transform 0.5s;
+
+    position: relative;   
 }
 
 .card {
-    height: 125px;
-    width: 125px;
-    justify-self: center;
-    background-color: rgb(58, 54, 54);
     border-radius: 15px;
     -webkit-box-shadow: 10px 10px 34px -12px rgba(0, 0, 0, 0.75);
     -moz-box-shadow: 10px 10px 34px -12px rgba(0, 0, 0, 0.75);
     box-shadow: 10px 10px 34px -12px rgba(0, 0, 0, 0.75);
-    cursor: pointer;
-    font-size: 0;
-    display: flex;
-    color: white;
-    align-items: center;
-    justify-content: center;
 }
 
+.is-flipped {
+    transform: rotateY(180deg);
+  }
+
+.card.card-front {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    background-color: #02b3e4;
+
+    color: white;
+    font-size: 4em;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    cursor: default;
+
+    backface-visibility: hidden;
+    transform: rotateY(180deg);
+}
+
+.card.card-back{
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    background-color: rgb(58, 54, 54);
+
+    cursor: pointer;
+
+    backface-visibility: hidden;
+}
+
+.card.match {
+    background-color: #02ccba;
+}
+
+.card.wrong {
+    background-color: #c43f2d;
+}
+
+.match-animation-active {
+    animation-name: match-animation;
+    animation-duration: 1s;
+    animation-iteration-count: 1;
+}
+
+.wrong-animation-active {
+    animation-name: wrong-animation;
+    animation-duration: 1s;
+    animation-iteration-count: 1;
+}
+
+@keyframes match-animation { 
+    15%
+    {
+        transform: scale(1.2) rotateY(180deg);
+    }
+    30%
+    {
+        transform: scale(0.8) rotateY(180deg);
+    }
+    50%
+    {
+        transform: scale(1.1) rotateY(180deg);
+    }
+    65%
+    {
+        transform: scale(0.9) rotateY(180deg);
+    }
+    80%
+    {
+        transform: scale(1.05) rotateY(180deg);
+    }
+    100%
+    {
+        transform: scale(1) rotateY(180deg);
+    }
+}
+
+@keyframes wrong-animation { 
+    15%
+    {
+        transform: translateX(10px) rotateY(180deg);
+    }
+    30%
+    {
+        transform: translateX(-10px) rotateY(180deg);
+    }
+    50%
+    {
+        transform: translateX(5px) rotateY(180deg);
+    }
+    65%
+    {
+        transform: translateX(-5px) rotateY(180deg);
+    }
+    80%
+    {
+        transform: translateX(3px) rotateY(180deg);
+    }
+    100%
+    {
+        transform: translateX(0) rotateY(180deg);
+    }
+}
+
+/* 
 .card.open {
     background-color: #02b3e4;
     font-size: 4em;
@@ -77,7 +190,7 @@ header h1 {
 .card.wrong {
     background-color: #c43f2d;
     font-size: 4em;
-}
+} */
 
 
 /* Score panel styles */
