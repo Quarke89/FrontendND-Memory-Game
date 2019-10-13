@@ -78,7 +78,7 @@ function restartGame() {
     }, 1000);
 
 
-    // shuffleArray(icons); // randomize icon locations
+    shuffleArray(icons); // randomize icon locations
 
     resetClasses();
     resetStars();
