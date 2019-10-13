@@ -4,18 +4,31 @@
 // Description:     Script for memory/matching game
 //============================================================================
 
+// attach click and animation transition event handlers to cards
 const grid = document.querySelector('.grid-container');
 grid.addEventListener('click', handleGridClick);
 grid.addEventListener('transitionend', handleCardAnimations);
 grid.addEventListener('animationend', handleCardAnimations);
 
+// attach click event handler to restart button
 const restartBtn = document.querySelector('.restart');
 restartBtn.addEventListener('click', restartGame);
+restartBtn.addEventListener('click', rotateButton);
 
+// attach click even handler to play again button in the hidden overlay
+const playAgainBtn = document.querySelector('.btn-play-again');
+playAgainBtn.addEventListener('click', restartGame);
+
+// DOM elements for the overlay
+const overlay = document.querySelector('.overlay');
+const popupMoveTxt = document.querySelector('.popup-moves');
+const popupStarsTxt = document.querySelector('.popup-stars');
+const popupTimerTxt = document.querySelector('.popup-timer');
+
+// DOM elements for the score panel
 const movesText = document.querySelector('.score-moves');
-
 const starList = document.querySelector('.score-stars');
-
+const timerText = document.querySelector('.timer-text');
 
 
 // define icons for the grid
@@ -29,29 +42,46 @@ let icons = ['fa-cog', 'fa-cog',
     'fa-umbrella', 'fa-umbrella'
 ];
 
+// global variables
 
-let moves = 0; // keep track of number of user moves         
-let numStars = 3;
-let openCards = []; // keep track of open cards
+let moves;      // keep track of number of user moves         
+let numStars;   // number of active stars based on user moves
+let openCards;  // keep track of open cards
+let numMatches; // number of successful matches completed
+let gridState;  // array that holds the animation state of each card
+let timeStart;  
+let timeElapsed;
+let timer;      // reference for the interval
 
-let gridState = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
-
-restartGame();
-
+// restart the game and reset all assests to the init values
 function restartGame() {
 
+
+    overlay.classList.remove('visible'); //disable overlay if present
+    
+    // init globals
     moves = 0;
     movesText.textContent = moves;
     numStars = 3;
+    timeStart = Date.now();
+    timeElapsed = 0;
+    timerText.textContent = 0;
     openCards = [];
+    numMatches = 0;
     gridState = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    
+    // set a timer to update in the score panel
+    timer = setInterval(() => {
+        timeElapsed = Date.now() - timeStart;
+        timerText.textContent = Math.floor(timeElapsed / 1000);
+    }, 1000);
 
-    shuffleArray(icons); // randomize icon locations
+
+    // shuffleArray(icons); // randomize icon locations
 
     resetClasses();
     resetStars();
-
 
     // assign icons to the cards
     let cardText = document.querySelectorAll('.card i');
@@ -60,29 +90,33 @@ function restartGame() {
     }
 }
 
+// reset classes on cards to reset the grid
 function resetClasses() {
     const cardText = document.querySelectorAll('.card i');
-    for (let i = 0; i < cardText.length; i++) {
-        cardText[i].classList = "fa";
+    for(const c of cardText){
+        c.classList = "fa";
     }
 
-    const cardFront = document.querySelectorAll('.card.card-front');
-    for (let i = 0; i < cardFront.length; i++) {
-        cardFront[i].classList = "card card-front";
+    const cardFront = document.querySelectorAll('.card.card-front');    
+    for(const c of cardFront){
+        c.classList = "card card-front";
     }
 
-    const cards = document.querySelectorAll('.card-container');
-    for (let i = 0; i < cards.length; i++) {
-        cards[i].classList = "card-container";
+    const cards = document.querySelectorAll('.card-container');    
+    for(const c of cards){
+        c.classList = "card-container";
     }
 }
 
+// reset star count to 3 
 function resetStars() {
-    const starHTML = document.createDocumentFragment();
-    starHTML.appendChild(document.createElement('li'));
-    starHTML.children[0].innerHTML = `<i class="fa fa-star"></i>`;
 
-    for (let i = 0; i < numStars - starList.childElementCount; i++) {
+    let starDiff = numStars - starList.childElementCount;
+
+    for (let i = 0; i < starDiff; i++) {
+        const starHTML = document.createDocumentFragment();
+        starHTML.appendChild(document.createElement('li'));
+        starHTML.children[0].innerHTML = `<i class="fa fa-star"></i>`;
         starList.appendChild(starHTML);
     }
 }
@@ -98,13 +132,17 @@ function shuffleArray(arr) {
     }
 }
 
+// rotate the restart button
+function rotateButton() {
+    restartBtn.classList.add("btn-rotate");
+    // remove the class after a fixed timeout
+    setTimeout(() => {
+        restartBtn.classList.remove("btn-rotate");
+    }, 500);
 
+}
 
-
-
-
-
-// handle only clicks on a card
+// handle on the grid container. Check if the click was on a card
 function handleGridClick(e) {
     if (e.target.classList.contains("card")) {
         // pass card container to handler function
@@ -112,9 +150,16 @@ function handleGridClick(e) {
     }
 }
 
+// Starting point to the animation sequence for flipping a card and
+// checking for a match
 function handleCardClick(card) {
+
+    // check if any other card is going through an animation
     const arrSum = gridState.reduce((a, b) => a + b, 0);
 
+    // if the card is not flipped and there are no active animations
+    // add the card to the open cards array, change the grid state and 
+    // start the animation
     if (!card.classList.contains("is-flipped") && arrSum === 0) {
         openCards.push(card);
         let cardIdx = Number(card.getAttribute('id')) - 1;
@@ -123,20 +168,21 @@ function handleCardClick(card) {
     }
 }
 
-
+// handler function that runs on animation end
+// calls the main animation manager
 function handleCardAnimations(e) {
     let cardIdx = Number(e.target.getAttribute('id')) - 1;
     animationManager(e, cardIdx);
 }
 
-/*
-0 - animation done
-1 - open animation
-2 - match animation
-3 - wrong animation
-4 - close animation
-*/
-
+// animation manager is used to sequence the animations and
+// block user inputs using the gridState array
+// Each gridState array value represents:
+// 0 - finished state
+// 1 - open animation ended
+// 2 - match animation ended
+// 3 - wrong animation ended
+// 4 - close animation ended
 function animationManager(e, cardIdx) {
 
     let cardState = gridState[cardIdx];
@@ -144,6 +190,9 @@ function animationManager(e, cardIdx) {
         case 0:
             break;
         case 1:
+            // if open animation has ended and there are 2 open cards
+            // check if they match. If only 1 card has been opened reset the grid state
+            // to allow for next user input
             if (openCards.length === 2) {
                 checkCardMatch();
             } else {
@@ -151,15 +200,21 @@ function animationManager(e, cardIdx) {
             }
             break;
         case 2:
+            // match animation just ended, check if game has been won
             e.target.classList.remove("match-animation-active");
             gridState[cardIdx] = 0;
+            if (numMatches === 8) {
+                gameWon();
+            }
             break;
         case 3:
+            // wong animation just ended, flip the card back to close position
             e.target.classList.remove("wrong-animation-active");
             gridState[cardIdx] = 4;
             e.target.classList.remove("is-flipped");
             break;
         case 4:
+            // close animation ended. can only happen if wrong pairs were picked
             e.target.querySelector('.card-front').classList.remove("wrong");
             gridState[cardIdx] = 0;
             break;
@@ -167,8 +222,10 @@ function animationManager(e, cardIdx) {
 
 }
 
+// check if the two open cards match
 function checkCardMatch() {
 
+    // increase the number of moves and adjust stars
     moves++;
     movesText.textContent = moves;
     adjustStars();
@@ -176,8 +233,11 @@ function checkCardMatch() {
     let cardIdx1 = Number(openCards[0].getAttribute('id')) - 1;
     let cardIdx2 = Number(openCards[1].getAttribute('id')) - 1;
 
+    // if the two cards match start the match animation and incease the number of matches
+    // else start the wrong animation
     if (openCards[0].querySelector('i').className === openCards[1].querySelector('i').className) {
 
+        numMatches++;
         openCards[0].querySelector('.card-front').classList.add("match");
         openCards[1].querySelector('.card-front').classList.add("match");
         openCards[0].classList.add("match-animation-active");
@@ -194,11 +254,13 @@ function checkCardMatch() {
         gridState[cardIdx2] = 3;
 
     }
+    // reset open cards
     openCards = [];
 }
 
+// adjust the star rating based on number of moves
 function adjustStars() {
-    if (moves <= 3) {
+    if (moves <= 12) {
         numStars = 3;
     } else if (moves <= 20) {
         numStars = 2;
@@ -206,8 +268,25 @@ function adjustStars() {
         numStars = 1;
     }
 
-    for (let i = 0; i < starList.childElementCount - numStars; i++) {
+    let starDiff = starList.childElementCount - numStars;
+
+    for (let i = 0; i < starDiff; i++) {
         starList.removeChild(starList.querySelector('.score-stars li'));
     }
 
 }
+
+// called when all cards have been matched. Stop the timer and display
+// the game won overlay
+function gameWon() {
+    clearInterval(timer);
+
+    popupMoveTxt.textContent = moves;
+    popupStarsTxt.textContent = numStars;
+    popupTimerTxt.textContent = Math.floor(timeElapsed / 1000);
+
+    overlay.classList.add('visible');
+
+}
+
+restartGame();

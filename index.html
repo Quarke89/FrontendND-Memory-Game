@@ -30,6 +30,11 @@
                 </div>
             </section>
 
+            <div class="timer">
+                Timer: <span class="timer-text">0</span>s
+            </div>
+
+            <!-- Main container for the grid of cards. Each card has a front and a back side to allow 3d flipping using CSS -->
             <div class="grid-container">
                 <div class="card-container" id="1">
                     <div class="card card-front"><i></i></div>
@@ -94,6 +99,18 @@
                 <div class="card-container" id="16">
                     <div class="card card-front"><i></i></div>
                     <div class="card card-back"></div>
+                </div>
+            </div>
+
+            <!-- Hidden overlay displayed when game is won -->
+            <div class="overlay">
+                <div class="popup">
+                    <div class="popup-items">
+                        <h2>Congragulations! You Won!</h2>
+                        <p>With <span class="popup-moves">x</span> Moves and <span class="popup-stars">x</span> Stars</p>
+                        <p>Time Elapsed: <span class="popup-timer">x</span> seconds</p>
+                        <div class="btn-play-again">Play Again!</div>
+                    </div>
                 </div>
             </div>
 
