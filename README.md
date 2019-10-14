@@ -2,6 +2,12 @@
 
 This project was done as part of the Front-End Nanodegree program for Udacity
 
+## Demo
+
+[Live Preview](http://htmlpreview.github.io/?https://github.com/Quarke89/FrontendND-Memory-Game/blob/master/index.html)
+
+![Memory game demo](img/demo.gif)
+
 ## Notable code details
 
 ### HTML

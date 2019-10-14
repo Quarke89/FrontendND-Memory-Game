@@ -189,13 +189,14 @@ header h1 {
 }
 
 
-/* Timer styles */
-
 .timer {
-    font-size: 1.2em;
-    margin-bottom: 1em;
-    padding-right: 1em;
-    text-align: right;
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.timer-text{
+    display: inline-block;
+    margin-left: 5px;
 }
 
 
